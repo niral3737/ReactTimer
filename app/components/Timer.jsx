@@ -1,9 +1,60 @@
 var React = require('react');
+var Clock = require('Clock');
+var Controlls = require('Controlls');
 
 var Timer = React.createClass({
+  getInitialState : function() {
+    return {
+      count : 0,
+      countdownStatus : 'paused'
+    };
+  },
+  startTimer : function () {
+    this.timer = setInterval(() => {
+      var newCount = this.state.count + 1;
+      this.setState({
+        count : newCount
+      });
+    }, 1000);
+  },
+  componentDidUpdate : function (prevProps, prevStates) {
+    if(this.state.countdownStatus !== prevStates.countdownStatus){
+      switch (this.state.countdownStatus) {
+        case 'started':
+          this.startTimer();
+          break;
+        case 'stopped' :
+          this.setState({
+            count : 0
+          });
+        case 'paused' :
+          clearInterval(this.timer);
+          this.timer = undefined;
+          break;
+        default:
+      }
+    }
+  },
+  handleStatusChange : function (newState) {
+    if(newState === 'stopped'){
+      this.setState({
+        countdownStatus : 'paused',
+        count : 0
+      });
+    }else{
+      this.setState({
+        countdownStatus : newState
+      });
+    }
+  },
   render: function() {
+    var {count, countdownStatus} = this.state;
     return (
-      <h1>Timer Component</h1>
+      <div>
+        <h1 className="page-title">Timer</h1>
+        <Clock totalSeconds={count}/>
+        <Controlls countdownStatus={countdownStatus} onStatusChange={this.handleStatusChange} />
+      </div>
     );
   }
 });
